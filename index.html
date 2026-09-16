@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#174f43" />
+  <title>Bonsplitser</title>
+  <style>
+    :root {
+      --bg: #f4f7f5;
+      --card: #ffffff;
+      --ink: #18312b;
+      --muted: #6f7f7a;
+      --line: #dbe5e1;
+      --primary: #174f43;
+      --primary-2: #267362;
+      --accent: #f2a65a;
+      --danger: #b84646;
+      --success: #287a54;
+      --warn-bg: #fff6df;
+      --danger-bg: #fff0f0;
+      --success-bg: #eaf7ef;
+      --shadow: 0 10px 28px rgba(24,49,43,.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .app { max-width: 920px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
+    header {
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(244,247,245,.94); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(219,229,225,.8);
+    }
+    .head { max-width: 920px; margin: 0 auto; padding: 14px 16px 10px; }
+    .brandrow { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 13px; background: var(--primary);
+      color: #fff; display: grid; place-items: center; font-size: 21px; box-shadow: var(--shadow);
+    }
+    h1 { font-size: 22px; margin: 0; letter-spacing: -.3px; }
+    .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+    .progress { margin-top: 13px; display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; }
+    .progress div { height: 5px; border-radius: 999px; background: #d9e3df; transition: .2s ease; }
+    .progress div.active { background: var(--primary); }
+
+    main { padding: 18px 14px 24px; }
+    .step { display: none; animation: fade .18s ease; }
+    .step.active { display: block; }
+    @keyframes fade { from { opacity: .3; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .section-title { font-size: 28px; line-height: 1.1; margin: 8px 2px 8px; letter-spacing: -.7px; }
+    .section-help { margin: 0 2px 20px; color: var(--muted); line-height: 1.45; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); margin-bottom: 14px; }
+    .card h3 { margin: 0 0 12px; font-size: 18px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label.field { display: block; }
+    .field span, .mini-label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin: 0 0 6px 2px; }
+    input, select {
+      width: 100%; border: 1px solid var(--line); border-radius: 13px; background: #fbfcfb; color: var(--ink);
+      padding: 12px 13px; outline: none; min-height: 44px;
+    }
+    input:focus, select:focus { border-color: var(--primary-2); box-shadow: 0 0 0 3px rgba(38,115,98,.12); background: white; }
+    input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; accent-color: var(--primary); }
+    .row { display: flex; gap: 10px; align-items: center; }
+    .grow { flex: 1; }
+    .btn {
+      border: 0; border-radius: 13px; padding: 11px 15px; min-height: 44px; font-weight: 750;
+      background: #e7eeeb; color: var(--ink);
+    }
+    .btn:hover { filter: brightness(.985); }
+    .btn.primary { background: var(--primary); color: white; }
+    .btn.ghost { background: transparent; border: 1px solid var(--line); }
+    .btn.danger { background: var(--danger-bg); color: var(--danger); }
+    .iconbtn { width: 42px; min-width: 42px; padding: 0; font-size: 18px; }
+    .person-row, .item-row { display: grid; gap: 8px; align-items: end; margin-bottom: 9px; }
+    .person-row { grid-template-columns: 1fr 42px; }
+    .item-row { grid-template-columns: 80px 1fr 112px 42px; }
+    .totals-bar {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; align-items: center;
+      padding: 13px 15px; border-radius: 15px; background: #edf4f1; margin: 14px 0;
+    }
+    .totals-bar strong { font-size: 20px; }
+    .small { font-size: 13px; color: var(--muted); }
+    .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 750; background: #edf4f1; }
+    .pill.ok { background: var(--success-bg); color: var(--success); }
+    .pill.bad { background: var(--danger-bg); color: var(--danger); }
+    .pill.warn { background: var(--warn-bg); color: #8b6414; }
+
+    .distribution-card { padding: 0; overflow: hidden; }
+    .dist-head { padding: 14px 16px; border-bottom: 1px solid var(--line); background: #fcfdfc; }
+    .dist-title { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+    .dist-title h3 { margin: 0; }
+    .dist-sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+    .mode-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-top: 12px; }
+    .mode-btn { border: 1px solid var(--line); background: white; color: var(--ink); border-radius: 11px; padding: 9px 8px; font-size: 12px; font-weight: 700; }
+    .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .dist-body { padding: 12px 16px 15px; }
+    .person-alloc { display: grid; grid-template-columns: minmax(0,1fr) 100px 90px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid #eef2f0; }
+    .person-alloc:last-child { border-bottom: 0; }
+    .person-alloc .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; }
+    .person-alloc input[type="number"] { min-height: 38px; padding: 8px 10px; text-align: right; }
+    .amount { text-align: right; font-variant-numeric: tabular-nums; }
+    .checkperson { display: flex; align-items: center; gap: 10px; min-height: 38px; }
+    .checkperson input { transform: scale(1.15); }
+    .validation { margin-top: 10px; font-size: 12px; border-radius: 11px; padding: 9px 10px; }
+    .validation.ok { background: var(--success-bg); color: var(--success); }
+    .validation.bad { background: var(--danger-bg); color: var(--danger); }
+
+    .radio-card { display: flex; align-items: flex-start; gap: 11px; padding: 13px; border: 1px solid var(--line); border-radius: 14px; margin: 8px 0; background: #fbfcfb; }
+    .radio-card input { margin-top: 3px; transform: scale(1.12); }
+    .radio-card strong { display: block; margin-bottom: 3px; }
+    .summary-person { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; background: white; }
+    .summary-top { display: flex; justify-content: space-between; gap: 10px; padding: 14px 15px; background: #fbfcfb; align-items: center; }
+    .summary-top h3 { margin: 0; }
+    .summary-top .price { font-size: 22px; font-weight: 800; }
+    .details { padding: 4px 15px 12px; }
+    .detail-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #e6ece9; font-size: 14px; }
+    .detail-row:last-child { border-bottom: 0; }
+    .detail-row .desc small { display: block; color: var(--muted); margin-top: 2px; }
+    .grand-total { background: var(--primary); color: white; border-radius: 19px; padding: 18px; margin: 15px 0; }
+    .grand-total .line { display: flex; justify-content: space-between; padding: 4px 0; }
+    .grand-total .big { margin-top: 8px; padding-top: 11px; border-top: 1px solid rgba(255,255,255,.25); font-size: 22px; font-weight: 850; }
+    .notice { border-radius: 14px; padding: 12px 13px; background: var(--warn-bg); color: #795a18; font-size: 13px; line-height: 1.4; margin: 10px 0 14px; }
+    .empty { text-align: center; color: var(--muted); padding: 24px 14px; border: 1px dashed #cad8d2; border-radius: 14px; }
+
+    .bottom-nav {
+      position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,.96); backdrop-filter: blur(13px);
+      border-top: 1px solid var(--line); padding: 10px max(14px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    }
+    .bottom-inner { max-width: 920px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+    .bottom-inner.one { grid-template-columns: 1fr; }
+    .hidden { display: none !important; }
+    .top-actions { display: flex; justify-content: flex-end; margin: 6px 2px 12px; }
+    .linkbtn { border: 0; background: transparent; color: var(--muted); font-weight: 700; padding: 7px; }
+    .copy-ok { color: var(--success); font-weight: 700; margin-top: 8px; font-size: 13px; }
+
+
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .choice-card { border: 2px solid var(--line); background: white; border-radius: 20px; padding: 20px; text-align: left; color: var(--ink); min-height: 185px; box-shadow: var(--shadow); }
+    .choice-card:hover { border-color: var(--primary-2); }
+    .choice-icon { font-size: 30px; margin-bottom: 12px; }
+    .choice-card h3 { font-size: 20px; margin: 0 0 7px; }
+    .choice-card p { color: var(--muted); line-height: 1.45; margin: 0; }
+    .live-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .person-chip { border: 1px solid var(--line); background: white; border-radius: 999px; padding: 10px 14px; font-weight: 750; color: var(--ink); }
+    .person-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .live-products { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 10px; }
+    .product-tap { border: 1px solid var(--line); background: #fbfcfb; border-radius: 15px; padding: 14px; text-align: left; min-height: 74px; color: var(--ink); }
+    .product-tap strong { display: block; font-size: 16px; margin-bottom: 4px; }
+    .product-tap span { font-size: 12px; color: var(--muted); }
+    .product-tap:active { transform: scale(.985); background: #eef5f2; }
+    .live-add-grid { display: grid; grid-template-columns: 1fr 120px auto; gap: 8px; align-items: end; }
+    .live-log { display: flex; flex-direction: column; gap: 8px; }
+    .log-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; border-bottom: 1px solid #eef2f0; padding: 9px 0; }
+    .log-row:last-child { border-bottom: 0; }
+    .log-main { font-size: 14px; }
+    .log-main small { display: block; color: var(--muted); margin-top: 3px; }
+    .inline-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .micro-btn { border: 0; border-radius: 10px; min-height: 36px; padding: 7px 10px; font-weight: 750; background: #edf4f1; color: var(--ink); }
+    .micro-btn.danger { background: var(--danger-bg); color: var(--danger); }
+    .live-counter { font-variant-numeric: tabular-nums; font-weight: 800; }
+
+    @media (max-width: 620px) {
+      .grid2 { grid-template-columns: 1fr; }
+      .item-row { grid-template-columns: 72px 1fr 42px; }
+      .item-row .price-field { grid-column: 1 / 3; }
+      .section-title { font-size: 25px; }
+      .person-alloc { grid-template-columns: minmax(0,1fr) 88px 78px; }
+      .mode-btn { font-size: 11px; padding: 9px 4px; }
+      .mode-grid { grid-template-columns: 1fr; }
+      .live-products { grid-template-columns: 1fr 1fr; }
+      .live-add-grid { grid-template-columns: 1fr 100px; }
+      .live-add-grid .add-live-wrap { grid-column: 1 / 3; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="head">
+    <div class="brandrow">
+      <div class="logo">✦</div>
+      <div>
+        <h1>Bonsplitser</h1>
+        <p class="subtitle" id="headerSubtitle">Wie waren erbij?</p>
+      </div>
+    </div>
+    <div class="progress" id="progress" aria-label="Voortgang"></div>
+  </div>
+</header>
+
+<div class="app">
+  <main>
+    <div class="top-actions"><button class="linkbtn" id="resetBtn">Nieuwe bon</button></div>
+
+
+    <section class="step" data-step="0">
+      <h2 class="section-title">Hoe wil je Bonsplitser gebruiken?</h2>
+      <p class="section-help">Kies wat op dit moment het handigst is. Je kunt een bestaande bon achteraf verdelen, of tijdens het uitje meteen bijhouden wie wat neemt.</p>
+      <div class="mode-grid">
+        <button class="choice-card" data-start-mode="live">
+          <div class="choice-icon">◎</div>
+          <h3>Nu live bijhouden</h3>
+          <p>Registreer tijdens de avond met één tik drankjes en gedeelde hapjes. Aan het eind hoef je alleen de prijzen van de bon te controleren.</p>
+        </button>
+        <button class="choice-card" data-start-mode="after">
+          <div class="choice-icon">≡</div>
+          <h3>Bon achteraf verdelen</h3>
+          <p>Je hebt de bon al. Voer de bonregels in en verdeel daarna per regel wie wat heeft gehad.</p>
+        </button>
+      </div>
+    </section>
+
+    <section class="step" data-step="1">
+      <h2 class="section-title">Wie waren erbij?</h2>
+      <p class="section-help">Voeg iedereen toe die iets heeft gebruikt. Mensen die eerder weggingen blijven gewoon in de lijst; bij latere hapjes vink je ze niet aan.</p>
+      <div class="card">
+        <div class="grid2">
+          <label class="field"><span>Restaurant / locatie (optioneel)</span><input id="restaurant" placeholder="Bijv. De Bloemen" /></label>
+          <label class="field"><span>Datum (optioneel)</span><input id="date" type="date" /></label>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Personen</h3>
+        <div id="peopleList"></div>
+        <button class="btn ghost" id="addPersonBtn">+ Persoon toevoegen</button>
+      </div>
+    </section>
+
+
+    <section class="step" data-step="2">
+      <h2 class="section-title">Live bijhouden</h2>
+      <p class="section-help">Selecteer eerst wie iets neemt en tik daarna op de consumptie. Selecteer je meerdere personen, dan registreert Bonsplitser één gedeeld item dat later automatisch over hen wordt verdeeld.</p>
+
+      <div class="card">
+        <h3>1. Wie neemt iets?</h3>
+        <div id="livePeople" class="live-selector"></div>
+        <p class="small" id="liveSelectionHelp" style="margin:10px 2px 0">Selecteer één of meer personen.</p>
+      </div>
+
+      <div class="card">
+        <h3>2. Tik op de consumptie</h3>
+        <div id="liveProducts" class="live-products"></div>
+        <div id="noLiveProducts" class="empty hidden">Voeg hieronder eerst een drankje of hapje toe.</div>
+      </div>
+
+      <div class="card">
+        <h3>Consumptie toevoegen</h3>
+        <div class="live-add-grid">
+          <label class="field"><span>Naam</span><input id="newLiveProductName" placeholder="Bijv. Affligem Blond" autocomplete="off"></label>
+          <label class="field"><span>Prijs p/st (optioneel)</span><input id="newLiveProductPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"></label>
+          <div class="add-live-wrap"><button class="btn ghost" id="addLiveProductBtn" style="width:100%">+ Toevoegen</button></div>
+        </div>
+        <p class="small" style="margin:10px 2px 0">Prijs nog niet bekend? Geen probleem. Die kun je later vanaf de bon invullen.</p>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div><h3 style="margin-bottom:3px">Wat is al geregistreerd?</h3><span class="small" id="liveEventCount">0 consumpties</span></div>
+          <button class="micro-btn" id="undoLiveBtn">↶ Laatste ongedaan</button>
+        </div>
+        <div id="liveLog" class="live-log" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+
+    <section class="step" data-step="3">
+      <h2 class="section-title">Wat staat er op de bon?</h2>
+      <p class="section-help">Vul per regel het aantal, de omschrijving en de totaalprijs op de bon in. De prijs per stuk wordt automatisch berekend.</p>
+      <div class="card">
+        <div id="itemsList"></div>
+        <button class="btn ghost" id="addItemBtn">+ Bonregel toevoegen</button>
+        <div class="totals-bar"><span>Totaal bon</span><strong id="receiptTotal">€ 0,00</strong></div>
+      </div>
+    </section>
+
+    <section class="step" data-step="4">
+      <h2 class="section-title">Wie had wat?</h2>
+      <p class="section-help">Kies per bonregel de handigste manier van verdelen. De app controleert of elk bedrag volledig is toegewezen.</p>
+      <div id="distributionList"></div>
+      <div id="distributionOverall" class="notice"></div>
+    </section>
+
+    <section class="step" data-step="5">
+      <h2 class="section-title">Fooi</h2>
+      <p class="section-help">Vul de betaalde fooi in en kies hoe die over de groep moet worden verdeeld.</p>
+      <div class="card">
+        <label class="field"><span>Fooi</span><input id="tip" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" /></label>
+        <div class="totals-bar"><span>Bon + fooi</span><strong id="withTipTotal">€ 0,00</strong></div>
+      </div>
+      <div class="card">
+        <h3>Hoe verdelen?</h3>
+        <label class="radio-card">
+          <input type="radio" name="tipMode" value="equal" checked />
+          <div><strong>Iedereen evenveel</strong><span class="small">De fooi wordt in gelijke delen over alle aanwezigen verdeeld.</span></div>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="tipMode" value="proportional" />
+          <div><strong>Naar rato van consumpties</strong><span class="small">Wie meer heeft gebruikt, betaalt ook een groter deel van de fooi.</span></div>
+        </label>
+      </div>
+    </section>
+
+    <section class="step" data-step="6">
+      <h2 class="section-title">Eindafrekening</h2>
+      <p class="section-help">Alles is verdeeld. Hieronder staat per persoon precies wat er betaald moet worden.</p>
+      <div id="grandTotal"></div>
+      <div id="summaryList"></div>
+      <div class="card">
+        <button class="btn primary" id="copyAllBtn" style="width:100%">Kopieer overzicht voor WhatsApp</button>
+        <div id="copyStatus" class="copy-ok hidden">Overzicht gekopieerd.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bottom-inner" id="bottomInner">
+    <button class="btn ghost" id="backBtn">Terug</button>
+    <button class="btn primary" id="nextBtn">Verder</button>
+  </div>
+</nav>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'bonsplitser-v2';
+  const state = {
+    step: 0, mode: null,
+    restaurant: '', date: '',
+    people: [{id: uid(), name:''}, {id: uid(), name:''}],
+    liveProducts: [], liveEvents: [], liveSelectedPeople: [],
+    items: [{id: uid(), qty: 1, name:'', total:''}],
+    allocations: {},
+    tip: '', tipMode: 'equal'
+  };
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const euro = cents => new Intl.NumberFormat('nl-NL', {style:'currency', currency:'EUR'}).format((cents || 0)/100);
+  const num = v => {
+    if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+    const x = String(v ?? '').replace(',', '.').trim();
+    const n = Number(x); return Number.isFinite(n) ? n : 0;
+  };
+  const moneyToCents = v => Math.round(num(v) * 100);
+  function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+  function cleanName(p, i){ return p.name.trim() || `Persoon ${i+1}`; }
+  function esc(v){ return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function fmtQty(v){ const n = num(v); return Number.isInteger(n) ? String(n) : n.toLocaleString('nl-NL',{maximumFractionDigits:2}); }
+
+  function flow(){ return state.mode === 'live' ? [0,1,2,3,4,5,6] : [0,1,3,4,5,6]; }
+  function nextInFlow(){ const f=flow(), i=f.indexOf(state.step); return i>=0 && i<f.length-1 ? f[i+1] : state.step; }
+  function prevInFlow(){ const f=flow(), i=f.indexOf(state.step); return i>0 ? f[i-1] : state.step; }
+
+  function save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+  function load(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return;
+      const parsed = JSON.parse(raw); Object.assign(state, parsed);
+      if (!Array.isArray(state.people) || !state.people.length) state.people=[{id:uid(),name:''}];
+      if (!Array.isArray(state.items) || !state.items.length) state.items=[{id:uid(),qty:1,name:'',total:''}];
+      if (!Array.isArray(state.liveProducts)) state.liveProducts=[];
+      if (!Array.isArray(state.liveEvents)) state.liveEvents=[];
+      if (!Array.isArray(state.liveSelectedPeople)) state.liveSelectedPeople=[];
+      state.allocations ||= {};
+      state.step = Math.max(0, Math.min(6, num(state.step)));
+      if (!state.mode) state.step=0;
+    } catch(e) {}
+  }
+
+  function ensureAllocation(item){
+    const current = state.allocations[item.id] || {mode:'units', values:{}};
+    current.mode ||= 'units'; current.values ||= {};
+    state.people.forEach(p => { if (current.values[p.id] == null) current.values[p.id] = current.mode === 'equal' ? false : ''; });
+    state.allocations[item.id] = current;
+    return current;
+  }
+
+  function allocateProportionally(totalCents, weights){
+    const entries = Object.entries(weights).filter(([,w]) => num(w) > 0);
+    const sum = entries.reduce((a,[,w]) => a + num(w), 0);
+    const out = {}; entries.forEach(([id]) => out[id] = 0);
+    if (!sum || totalCents <= 0) return out;
+    const raw = entries.map(([id,w]) => ({id, raw: totalCents * num(w) / sum}));
+    let used = 0;
+    raw.forEach(r => { r.base = Math.floor(r.raw); r.frac = r.raw-r.base; out[r.id]=r.base; used += r.base; });
+    raw.sort((a,b)=>b.frac-a.frac || a.id.localeCompare(b.id));
+    for (let i=0; i<totalCents-used; i++) out[raw[i % raw.length].id]++;
+    return out;
+  }
+
+  function itemAllocation(item){
+    const alloc=ensureAllocation(item), totalCents=moneyToCents(item.total), result={};
+    state.people.forEach(p=>result[p.id]=0);
+    let valid=false, message='';
+    if (alloc.mode==='equal') {
+      const selected=state.people.filter(p=>!!alloc.values[p.id]);
+      if (!selected.length) message='Selecteer minimaal één persoon.';
+      else { Object.assign(result, allocateProportionally(totalCents,Object.fromEntries(selected.map(p=>[p.id,1])))); valid=true; message=`Gelijk verdeeld over ${selected.length} ${selected.length===1?'persoon':'personen'}.`; }
+    } else if (alloc.mode==='units') {
+      const expected=num(item.qty), actual=state.people.reduce((s,p)=>s+num(alloc.values[p.id]),0);
+      if (expected<=0) message='Vul eerst een geldig aantal op de bon in.';
+      else if (Math.abs(expected-actual)>0.00001) message=`Nog te verdelen: ${fmtQty(expected-actual)} van ${fmtQty(expected)}.`;
+      else { Object.assign(result, allocateProportionally(totalCents,Object.fromEntries(state.people.map(p=>[p.id,num(alloc.values[p.id])])))); valid=true; message=`Alle ${fmtQty(expected)} verdeeld.`; }
+    } else {
+      const amounts=Object.fromEntries(state.people.map(p=>[p.id,moneyToCents(alloc.values[p.id])])), actual=Object.values(amounts).reduce((a,b)=>a+b,0), diff=totalCents-actual;
+      state.people.forEach(p=>result[p.id]=amounts[p.id]||0);
+      if (diff!==0) message=`${diff>0?'Nog te verdelen':'Te veel verdeeld'}: ${euro(Math.abs(diff))}.`;
+      else { valid=true; message='Het volledige bedrag is verdeeld.'; }
+    }
+    return {result,valid,message};
+  }
+
+  function allItemAllocations(){
+    const perPerson=Object.fromEntries(state.people.map(p=>[p.id,{subtotal:0,lines:[]} ])); let allValid=true;
+    state.items.forEach((item,idx)=>{
+      const a=itemAllocation(item); if(!a.valid) allValid=false;
+      state.people.forEach(p=>{ const cents=a.result[p.id]||0; if(cents){ perPerson[p.id].subtotal+=cents; perPerson[p.id].lines.push({item,cents,index:idx}); } });
+    });
+    return {perPerson,allValid};
+  }
+
+  function tipAllocation(perPerson){
+    const tipCents=moneyToCents(state.tip); if(!tipCents||!state.people.length) return Object.fromEntries(state.people.map(p=>[p.id,0]));
+    if(state.tipMode==='proportional'){
+      const weights=Object.fromEntries(state.people.map(p=>[p.id,perPerson[p.id].subtotal]));
+      if(Object.values(weights).reduce((a,b)=>a+b,0)>0) return allocateProportionally(tipCents,weights);
+    }
+    return allocateProportionally(tipCents,Object.fromEntries(state.people.map(p=>[p.id,1])));
+  }
+
+  function receiptTotalCents(){ return state.items.reduce((s,i)=>s+moneyToCents(i.total),0); }
+
+  function syncLiveToBill(){
+    if (state.mode!=='live') return;
+    const byProduct=new Map();
+    state.liveEvents.forEach(ev=>byProduct.set(ev.productId,(byProduct.get(ev.productId)||0)+1));
+    const existing=new Map(state.items.filter(i=>i.liveProductId).map(i=>[i.liveProductId,i]));
+    const newItems=[], newAlloc={};
+    state.liveProducts.forEach(prod=>{
+      const qty=byProduct.get(prod.id)||0; if(!qty) return;
+      const old=existing.get(prod.id);
+      const item={
+        id: old?.id || `live_${prod.id}`,
+        liveProductId: prod.id,
+        qty,
+        name: prod.name,
+        total: old?.manualTotal ? old.total : (String(prod.unitPrice??'').trim()!=='' ? (num(prod.unitPrice)*qty).toFixed(2) : (old?.total ?? '')),
+        manualTotal: old?.manualTotal || false
+      };
+      newItems.push(item);
+      const values=Object.fromEntries(state.people.map(p=>[p.id,0]));
+      state.liveEvents.filter(ev=>ev.productId===prod.id).forEach(ev=>{
+        const ids=ev.personIds.filter(id=>values[id]!=null); if(!ids.length) return;
+        const share=1/ids.length; ids.forEach(id=>values[id]+=share);
+      });
+      newAlloc[item.id]={mode:'units',values:Object.fromEntries(Object.entries(values).map(([id,v])=>[id,v?Number(v.toFixed(6)):'']))};
+    });
+    const manualItems=state.items.filter(i=>!i.liveProductId && (i.name?.trim() || String(i.total??'').trim()!==''));
+    manualItems.forEach(i=>{ newItems.push(i); if(state.allocations[i.id]) newAlloc[i.id]=state.allocations[i.id]; });
+    state.items=newItems.length?newItems:[{id:uid(),qty:1,name:'',total:''}];
+    state.allocations=newAlloc;
+  }
+
+  function render(){ renderChrome(); renderPeople(); renderLive(); renderItems(); renderDistribution(); renderTip(); renderSummary(); save(); }
+
+  function renderChrome(){
+    $$('.step').forEach(el=>el.classList.toggle('active',num(el.dataset.step)===state.step));
+    const labels={0:'Kies een werkwijze',1:'Wie waren erbij?',2:'Live bijhouden',3:'Wat staat er op de bon?',4:'Wie had wat?',5:'Fooi',6:'Eindafrekening'};
+    const f=flow().filter(x=>x!==0), idx=f.indexOf(state.step);
+    $('#headerSubtitle').textContent=state.step===0 ? labels[0] : `${idx+1}/${f.length} · ${labels[state.step]}`;
+    const progress=$('#progress'); progress.innerHTML='';
+    if(state.step!==0){
+      progress.style.gridTemplateColumns=`repeat(${f.length},1fr)`;
+      f.forEach((st,i)=>{ const d=document.createElement('div'); d.classList.toggle('active',i<=idx); progress.appendChild(d); });
+    }
+    $('#backBtn').classList.toggle('hidden',state.step===0);
+    $('#nextBtn').classList.toggle('hidden',state.step===0 || state.step===6);
+    if(state.step===2) $('#nextBtn').textContent='Naar de bon';
+    else if(state.step===5) $('#nextBtn').textContent='Bekijk afrekening';
+    else $('#nextBtn').textContent='Verder';
+    $('#bottomInner').classList.toggle('one',state.step===0 || state.step===6);
+    $('.bottom-nav').classList.toggle('hidden',state.step===0);
+  }
+
+  function renderPeople(){
+    $('#restaurant').value=state.restaurant||''; $('#date').value=state.date||'';
+    const wrap=$('#peopleList'); wrap.innerHTML='';
+    state.people.forEach((p,i)=>{
+      const row=document.createElement('div'); row.className='person-row';
+      row.innerHTML=`<label class="field"><span>Naam ${i+1}</span><input data-person-name="${p.id}" value="${esc(p.name)}" placeholder="Naam" autocomplete="off"></label><button class="btn danger iconbtn" data-remove-person="${p.id}" aria-label="Verwijder persoon">×</button>`;
+      wrap.appendChild(row);
+    });
+  }
+
+  function renderLive(){
+    if(!$('#livePeople')) return;
+    state.liveSelectedPeople=state.liveSelectedPeople.filter(id=>state.people.some(p=>p.id===id));
+    const ppl=$('#livePeople'); ppl.innerHTML='';
+    state.people.forEach((p,i)=>{
+      const b=document.createElement('button'); b.className='person-chip'+(state.liveSelectedPeople.includes(p.id)?' active':''); b.dataset.livePerson=p.id; b.textContent=cleanName(p,i); ppl.appendChild(b);
+    });
+    const selectedNames=state.people.filter(p=>state.liveSelectedPeople.includes(p.id)).map((p,i)=>p.name.trim()||cleanName(p,state.people.indexOf(p)));
+    $('#liveSelectionHelp').textContent=!selectedNames.length?'Selecteer één of meer personen.':selectedNames.length===1?`${selectedNames[0]} geselecteerd. Tik nu op een consumptie.`:`${selectedNames.length} personen geselecteerd: een tik registreert één gedeeld item.`;
+    const products=$('#liveProducts'); products.innerHTML='';
+    state.liveProducts.forEach(prod=>{
+      const count=state.liveEvents.filter(e=>e.productId===prod.id).length;
+      const b=document.createElement('button'); b.className='product-tap'; b.dataset.tapProduct=prod.id;
+      const price=String(prod.unitPrice??'').trim()!==''?`${euro(moneyToCents(prod.unitPrice))} p/st`:'prijs later invullen';
+      b.innerHTML=`<strong>${esc(prod.name)}</strong><span>${price} · <span class="live-counter">${count}× geregistreerd</span></span>`; products.appendChild(b);
+    });
+    $('#noLiveProducts').classList.toggle('hidden',state.liveProducts.length>0);
+    $('#liveEventCount').textContent=`${state.liveEvents.length} ${state.liveEvents.length===1?'consumptie':'consumpties'}`;
+    const log=$('#liveLog'); log.innerHTML='';
+    [...state.liveEvents].slice(-12).reverse().forEach(ev=>{
+      const prod=state.liveProducts.find(p=>p.id===ev.productId); if(!prod)return;
+      const names=ev.personIds.map(id=>{const idx=state.people.findIndex(p=>p.id===id); return idx>=0?cleanName(state.people[idx],idx):'';}).filter(Boolean);
+      const row=document.createElement('div'); row.className='log-row';
+      row.innerHTML=`<div class="log-main"><strong>${esc(prod.name)}</strong><small>${names.length>1?'gedeeld door ':''}${esc(names.join(', '))}</small></div><button class="micro-btn danger" data-remove-live-event="${ev.id}">×</button>`; log.appendChild(row);
+    });
+    if(!state.liveEvents.length) log.innerHTML='<div class="empty">Nog niets geregistreerd.</div>';
+  }
+
+  function renderItems(){
+    const wrap=$('#itemsList'); wrap.innerHTML='';
+    state.items.forEach((it,i)=>{
+      const unit=num(it.qty)>0?moneyToCents(it.total)/num(it.qty):0;
+      const row=document.createElement('div'); row.className='item-row';
+      row.innerHTML=`<label class="field"><span>Aantal</span><input type="number" min="0" step="1" inputmode="decimal" data-item-qty="${it.id}" value="${esc(it.qty)}" ${state.mode==='live'&&it.liveProductId?'readonly':''}></label><label class="field"><span>Omschrijving</span><input data-item-name="${it.id}" value="${esc(it.name)}" placeholder="Bijv. Affligem Blond"></label><label class="field price-field"><span>Totaalprijs · p/st ${euro(Math.round(unit))}</span><input type="number" min="0" step="0.01" inputmode="decimal" data-item-total="${it.id}" value="${esc(it.total)}" placeholder="0,00"></label><button class="btn danger iconbtn" data-remove-item="${it.id}" aria-label="Verwijder bonregel">×</button>`;
+      wrap.appendChild(row);
+    });
+    $('#receiptTotal').textContent=euro(receiptTotalCents());
+  }
+
+  function renderDistribution(){
+    const wrap=$('#distributionList'); wrap.innerHTML='';
+    if(!state.items.length){wrap.innerHTML='<div class="empty">Voeg eerst bonregels toe.</div>';return;}
+    state.items.forEach((item,idx)=>{
+      const alloc=ensureAllocation(item), chk=itemAllocation(item); let peopleHtml='';
+      state.people.forEach((p,pi)=>{
+        const pname=esc(cleanName(p,pi)), cents=chk.result[p.id]||0;
+        if(alloc.mode==='equal') peopleHtml+=`<div class="person-alloc"><label class="checkperson"><input type="checkbox" data-alloc-check="${item.id}|${p.id}" ${alloc.values[p.id]?'checked':''}><span class="name">${pname}</span></label><span></span><span class="amount">${euro(cents)}</span></div>`;
+        else if(alloc.mode==='units') peopleHtml+=`<div class="person-alloc"><span class="name">${pname}</span><input type="number" min="0" step="0.01" inputmode="decimal" data-alloc-value="${item.id}|${p.id}" value="${esc(alloc.values[p.id]??'')}" placeholder="0"><span class="amount">${euro(cents)}</span></div>`;
+        else peopleHtml+=`<div class="person-alloc"><span class="name">${pname}</span><input type="number" min="0" step="0.01" inputmode="decimal" data-alloc-value="${item.id}|${p.id}" value="${esc(alloc.values[p.id]??'')}" placeholder="0,00"><span class="amount">${euro(cents)}</span></div>`;
+      });
+      const card=document.createElement('div'); card.className='card distribution-card';
+      card.innerHTML=`<div class="dist-head"><div class="dist-title"><div><h3>${idx+1}. ${esc(item.name.trim()||'Bonregel')}</h3><div class="dist-sub">${fmtQty(item.qty)} × · ${euro(moneyToCents(item.total))}</div></div><span class="pill ${chk.valid?'ok':'bad'}">${chk.valid?'✓ compleet':'controle'}</span></div><div class="mode-tabs"><button class="mode-btn ${alloc.mode==='units'?'active':''}" data-mode="${item.id}|units">Aantallen</button><button class="mode-btn ${alloc.mode==='equal'?'active':''}" data-mode="${item.id}|equal">Gelijk delen</button><button class="mode-btn ${alloc.mode==='amounts'?'active':''}" data-mode="${item.id}|amounts">Vrij bedrag</button></div></div><div class="dist-body">${peopleHtml}<div class="validation ${chk.valid?'ok':'bad'}">${esc(chk.message)}</div></div>`;
+      wrap.appendChild(card);
+    });
+    const all=allItemAllocations(); $('#distributionOverall').className=all.allValid?'validation ok':'notice'; $('#distributionOverall').textContent=all.allValid?`✓ Alle bonregels zijn volledig verdeeld (${euro(receiptTotalCents())}).`:'Nog niet alle bonregels zijn volledig verdeeld. Controleer de regels met de rode melding.';
+  }
+
+  function renderTip(){ $('#tip').value=state.tip??''; const r=$(`input[name="tipMode"][value="${state.tipMode}"]`); if(r)r.checked=true; $('#withTipTotal').textContent=euro(receiptTotalCents()+moneyToCents(state.tip)); }
+
+  function renderSummary(){
+    const wrap=$('#summaryList'); wrap.innerHTML=''; const data=allItemAllocations();
+    if(!data.allValid){ $('#grandTotal').innerHTML='<div class="notice">De eindafrekening kan pas betrouwbaar worden getoond als alle bonregels volledig zijn verdeeld.</div>'; return; }
+    const tips=tipAllocation(data.perPerson), receipt=receiptTotalCents(), tip=moneyToCents(state.tip), expected=receipt+tip; let actual=0;
+    state.people.forEach(p=>actual+=data.perPerson[p.id].subtotal+(tips[p.id]||0));
+    $('#grandTotal').innerHTML=`<div class="grand-total"><div class="line"><span>Bon</span><strong>${euro(receipt)}</strong></div><div class="line"><span>Fooi</span><strong>${euro(tip)}</strong></div><div class="line big"><span>Totaal</span><span>${euro(expected)}</span></div><div class="line" style="font-size:12px;opacity:.82"><span>Controle verdeling</span><span>${actual===expected?'✓ klopt':'⚠ verschil '+euro(actual-expected)}</span></div></div>`;
+    state.people.forEach((p,pi)=>{
+      const pdata=data.perPerson[p.id], tipCents=tips[p.id]||0, total=pdata.subtotal+tipCents;
+      const details=pdata.lines.map(line=>{const a=ensureAllocation(line.item); let extra=a.mode==='equal'?'gedeeld':a.mode==='amounts'?'vrije verdeling':`${fmtQty(num(a.values[p.id]))} ×`; return `<div class="detail-row"><div class="desc">${esc(line.item.name.trim()||'Bonregel')}<small>${extra}</small></div><strong>${euro(line.cents)}</strong></div>`;}).join('');
+      const card=document.createElement('div'); card.className='summary-person'; card.innerHTML=`<div class="summary-top"><h3>${esc(cleanName(p,pi))}</h3><span class="price">${euro(total)}</span></div><div class="details">${details||'<div class="detail-row"><span>Geen consumpties</span><strong>€ 0,00</strong></div>'}<div class="detail-row"><div class="desc">Fooi<small>${state.tipMode==='equal'?'gelijk verdeeld':'naar rato'}</small></div><strong>${euro(tipCents)}</strong></div></div>`; wrap.appendChild(card);
+    });
+  }
+
+  function canAdvance(){
+    if(state.step===1){ const names=state.people.map(p=>p.name.trim()).filter(Boolean); if(!names.length)return alertMsg('Vul minimaal één naam in.'); if(names.length!==state.people.length)return alertMsg('Vul voor iedere persoon een naam in.'); if(new Set(names.map(n=>n.toLowerCase())).size!==names.length)return alertMsg('Gebruik voor iedere persoon een unieke naam.'); }
+    if(state.step===2){ if(!state.liveEvents.length)return alertMsg('Registreer minimaal één consumptie, of ga terug en kies “Bon achteraf verdelen”.'); syncLiveToBill(); }
+    if(state.step===3){ const valid=state.items.filter(i=>i.name.trim()&&num(i.qty)>0&&String(i.total??'').trim()!==''&&moneyToCents(i.total)>=0); if(!valid.length||valid.length!==state.items.length)return alertMsg('Vul elke bonregel compleet in: aantal, omschrijving en totaalprijs.'); }
+    if(state.step===4&&!allItemAllocations().allValid)return alertMsg('Verdeel eerst alle bonregels volledig.');
+    if(state.step===5&&moneyToCents(state.tip)<0)return alertMsg('Fooi kan niet negatief zijn.');
+    return true;
+  }
+  function alertMsg(msg){ window.alert(msg); return false; }
+  function go(step){ state.step=step; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+  function buildShareText(){
+    const data=allItemAllocations(); if(!data.allValid)return''; const tips=tipAllocation(data.perPerson); const title=state.restaurant.trim()?`Bonsplitser – ${state.restaurant.trim()}`:'Bonsplitser'; const dateText=state.date?new Date(state.date+'T12:00:00').toLocaleDateString('nl-NL'):''; const lines=[title+(dateText?` (${dateText})`:''),''];
+    state.people.forEach((p,pi)=>{const d=data.perPerson[p.id]; lines.push(`${cleanName(p,pi)}: ${euro(d.subtotal+(tips[p.id]||0))}`);}); lines.push('',`Bon: ${euro(receiptTotalCents())}`,`Fooi: ${euro(moneyToCents(state.tip))}`,`Totaal: ${euro(receiptTotalCents()+moneyToCents(state.tip))}`); return lines.join('\n');
+  }
+
+  document.addEventListener('input',e=>{
+    const t=e.target;
+    if(t.id==='restaurant')state.restaurant=t.value;
+    else if(t.id==='date')state.date=t.value;
+    else if(t.id==='tip')state.tip=t.value;
+    else if(t.dataset.personName){const p=state.people.find(x=>x.id===t.dataset.personName);if(p)p.name=t.value;}
+    else if(t.dataset.itemQty){const i=state.items.find(x=>x.id===t.dataset.itemQty);if(i)i.qty=t.value;}
+    else if(t.dataset.itemName){const i=state.items.find(x=>x.id===t.dataset.itemName);if(i)i.name=t.value;}
+    else if(t.dataset.itemTotal){const i=state.items.find(x=>x.id===t.dataset.itemTotal);if(i){i.total=t.value;i.manualTotal=true;}}
+    else if(t.dataset.allocValue){const [itemId,personId]=t.dataset.allocValue.split('|');const a=state.allocations[itemId];if(a)a.values[personId]=t.value;}
+    save();
+  });
+
+  document.addEventListener('change',e=>{
+    const t=e.target;
+    if(t.name==='tipMode'){state.tipMode=t.value;render();}
+    else if(t.id==='tip'||t.dataset.itemQty||t.dataset.itemName||t.dataset.itemTotal||t.dataset.allocValue)render();
+    else if(t.dataset.allocCheck){const [itemId,personId]=t.dataset.allocCheck.split('|');const a=state.allocations[itemId];if(a)a.values[personId]=t.checked;render();}
+  });
+
+  document.addEventListener('click',async e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.startMode){ state.mode=b.dataset.startMode; state.step=1; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+    else if(b.id==='addPersonBtn'){state.people.push({id:uid(),name:''});render();}
+    else if(b.dataset.removePerson){
+      if(state.people.length<=1)return alertMsg('Er moet minimaal één persoon blijven staan.');
+      const id=b.dataset.removePerson; state.people=state.people.filter(p=>p.id!==id); state.liveSelectedPeople=state.liveSelectedPeople.filter(x=>x!==id); state.liveEvents.forEach(ev=>ev.personIds=ev.personIds.filter(x=>x!==id)); state.liveEvents=state.liveEvents.filter(ev=>ev.personIds.length); Object.values(state.allocations).forEach(a=>delete a.values[id]); render();
+    }
+    else if(b.dataset.livePerson){ const id=b.dataset.livePerson; state.liveSelectedPeople=state.liveSelectedPeople.includes(id)?state.liveSelectedPeople.filter(x=>x!==id):[...state.liveSelectedPeople,id]; render(); }
+    else if(b.id==='addLiveProductBtn'){
+      const name=$('#newLiveProductName').value.trim(), price=$('#newLiveProductPrice').value;
+      if(!name)return alertMsg('Vul een naam voor de consumptie in.');
+      state.liveProducts.push({id:uid(),name,unitPrice:price}); $('#newLiveProductName').value=''; $('#newLiveProductPrice').value=''; render();
+    }
+    else if(b.dataset.tapProduct){
+      if(!state.liveSelectedPeople.length)return alertMsg('Selecteer eerst wie deze consumptie neemt.');
+      state.liveEvents.push({id:uid(),productId:b.dataset.tapProduct,personIds:[...state.liveSelectedPeople],at:Date.now()}); state.liveSelectedPeople=[]; render();
+    }
+    else if(b.dataset.removeLiveEvent){state.liveEvents=state.liveEvents.filter(ev=>ev.id!==b.dataset.removeLiveEvent);render();}
+    else if(b.id==='undoLiveBtn'){if(state.liveEvents.length){state.liveEvents.pop();render();}}
+    else if(b.id==='addItemBtn'){state.items.push({id:uid(),qty:1,name:'',total:''});render();}
+    else if(b.dataset.removeItem){
+      if(state.items.length<=1)return alertMsg('Er moet minimaal één bonregel blijven staan.');
+      state.items=state.items.filter(i=>i.id!==b.dataset.removeItem);delete state.allocations[b.dataset.removeItem];render();
+    }
+    else if(b.dataset.mode){const [itemId,mode]=b.dataset.mode.split('|');const a=state.allocations[itemId]||{values:{}};a.mode=mode;a.values={};state.people.forEach(p=>a.values[p.id]=mode==='equal'?false:'');state.allocations[itemId]=a;render();}
+    else if(b.id==='nextBtn'){if(canAdvance())go(nextInFlow());}
+    else if(b.id==='backBtn')go(prevInFlow());
+    else if(b.id==='resetBtn'){
+      if(confirm('Nieuwe bon starten? De huidige gegevens worden gewist.')){localStorage.removeItem(STORAGE_KEY);Object.assign(state,{step:0,mode:null,restaurant:'',date:'',people:[{id:uid(),name:''},{id:uid(),name:''}],liveProducts:[],liveEvents:[],liveSelectedPeople:[],items:[{id:uid(),qty:1,name:'',total:''}],allocations:{},tip:'',tipMode:'equal'});render();}
+    }
+    else if(b.id==='copyAllBtn'){
+      const text=buildShareText();if(!text)return; try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();} $('#copyStatus').classList.remove('hidden');setTimeout(()=>$('#copyStatus').classList.add('hidden'),2500);
+    }
+  });
+
+  load(); render();
+})();
+</script>
+</body>
+</html>

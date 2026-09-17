@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="JerApps.nl">
+  <rect x="2" y="2" width="176" height="176" rx="32" fill="#f8fbff" stroke="#e6edf8" stroke-width="4"/>
+  <g stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="18" y="18" width="42" height="42" rx="11" fill="#22c95b" stroke="none"/><path d="M39 30v5M31 39h5M47 39h5M36 48h7"/>
+    <rect x="69" y="18" width="42" height="42" rx="11" fill="#ffc21f" stroke="none"/><rect x="80" y="29" width="20" height="20" rx="4"/><path d="M84 39l4 4 8-9"/>
+    <rect x="120" y="18" width="42" height="42" rx="11" fill="#167ff1" stroke="none"/>
+    <rect x="18" y="69" width="42" height="42" rx="11" fill="#ff7b18" stroke="none"/><rect x="28" y="81" width="22" height="19" rx="3"/><path d="M33 78v6M45 78v6M28 88h22"/>
+    <rect x="69" y="69" width="42" height="42" rx="11" fill="#f13d4d" stroke="none"/><path d="M90 98c-14-9-15-19-7-23 4-2 7 0 9 3 2-3 5-5 9-3 8 4 7 14-7 23l-2 2z" fill="#fff" stroke="none"/>
+    <rect x="120" y="69" width="42" height="42" rx="11" fill="#19ace8" stroke="none"/>
+    <rect x="18" y="120" width="42" height="42" rx="11" fill="#7548e8" stroke="none"/><path d="M29 137h20M31 137c0 7 4 10 8 10s8-3 8-10"/><path d="M34 152c3 3 7 3 10 0"/>
+    <rect x="69" y="120" width="42" height="42" rx="11" fill="#1f75e8" stroke="none"/>
+    <rect x="120" y="120" width="42" height="42" rx="11" fill="#48a5ed" stroke="none"/>
+  </g>
+</svg>

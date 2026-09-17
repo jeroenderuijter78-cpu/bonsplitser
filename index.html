@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#174f43" />
   <title>Bonsplitser</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
   <style>
     :root {
       --bg: #f4f7f5;
@@ -41,11 +42,7 @@
     }
     .head { max-width: 920px; margin: 0 auto; padding: 14px 16px 10px; }
     .brandrow { display: flex; align-items: center; gap: 12px; }
-    .logo {
-      width: 42px; height: 42px; border-radius: 13px; background: var(--primary);
-      color: #fff; display: grid; place-items: center; font-size: 21px; box-shadow: var(--shadow);
-    }
-    h1 { font-size: 22px; margin: 0; letter-spacing: -.3px; }
+    .brand-logo { width: 188px; max-width: 54vw; height: auto; display: block; }
     .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
     .progress { margin-top: 13px; display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; }
     .progress div { height: 5px; border-radius: 999px; background: #d9e3df; transition: .2s ease; }
@@ -142,7 +139,7 @@
     .copy-ok { color: var(--success); font-weight: 700; margin-top: 8px; font-size: 13px; }
 
 
-    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .mode-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
     .choice-card { border: 2px solid var(--line); background: white; border-radius: 20px; padding: 20px; text-align: left; color: var(--ink); min-height: 185px; box-shadow: var(--shadow); }
     .choice-card:hover { border-color: var(--primary-2); }
     .choice-icon { font-size: 30px; margin-bottom: 12px; }
@@ -167,6 +164,23 @@
     .micro-btn.danger { background: var(--danger-bg); color: var(--danger); }
     .live-counter { font-variant-numeric: tabular-nums; font-weight: 800; }
 
+    .scan-drop { border: 2px dashed #c8d8d1; background: #fbfdfc; border-radius: 18px; padding: 18px; text-align: center; }
+    .scan-drop input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .scan-preview { width: 100%; max-height: 430px; object-fit: contain; border-radius: 14px; margin-top: 14px; background: #eef2f0; }
+    .scan-actions { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+    .scan-progress { margin-top: 14px; }
+    .progress-track { height: 9px; background: #e7eeeb; border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: var(--primary); transition: width .2s ease; }
+    .scan-table { display: grid; gap: 10px; }
+    .scan-row { display: grid; grid-template-columns: 68px minmax(0,1fr) 96px 42px; gap: 8px; align-items: end; padding: 10px 0; border-bottom: 1px solid #eef2f0; }
+    .scan-row:last-child { border-bottom: 0; }
+    .scan-unit { font-size: 12px; color: var(--muted); padding: 0 2px 9px; text-align: right; }
+    .scan-check { display: grid; gap: 7px; margin-top: 10px; }
+    .check-line { display: flex; justify-content: space-between; gap: 16px; padding: 10px 12px; border-radius: 12px; background: #f2f6f4; font-size: 14px; }
+    .check-line.bad { background: var(--danger-bg); color: var(--danger); }
+    .check-line.ok { background: var(--success-bg); color: var(--success); }
+    .ocr-raw { white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow: auto; background: #f5f7f6; border-radius: 12px; padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: #51605b; }
+
     @media (max-width: 620px) {
       .grid2 { grid-template-columns: 1fr; }
       .item-row { grid-template-columns: 72px 1fr 42px; }
@@ -178,6 +192,18 @@
       .live-products { grid-template-columns: 1fr 1fr; }
       .live-add-grid { grid-template-columns: 1fr 100px; }
       .live-add-grid .add-live-wrap { grid-column: 1 / 3; }
+      .scan-row { grid-template-columns: 64px minmax(0,1fr) 42px; }
+      .scan-row .scan-price-field { grid-column: 1 / 3; }
+    }
+
+    @media print {
+      body { background: white; }
+      header, .bottom-nav, .top-actions, #shareActions { display: none !important; }
+      .app { max-width: none; padding: 0; }
+      main { padding: 0; }
+      .step { display: none !important; }
+      .step[data-step="6"].active { display: block !important; }
+      .card, .summary-person { box-shadow: none; break-inside: avoid; }
     }
   </style>
 </head>
@@ -185,11 +211,8 @@
 <header>
   <div class="head">
     <div class="brandrow">
-      <div class="logo">✦</div>
-      <div>
-        <h1>Bonsplitser</h1>
-        <p class="subtitle" id="headerSubtitle">Wie waren erbij?</p>
-      </div>
+      <img class="brand-logo" src="assets/bonsplitser-logo.png" alt="Bonsplitser">
+      <p class="subtitle" id="headerSubtitle">Wie waren erbij?</p>
     </div>
     <div class="progress" id="progress" aria-label="Voortgang"></div>
   </div>
@@ -202,18 +225,71 @@
 
     <section class="step" data-step="0">
       <h2 class="section-title">Hoe wil je Bonsplitser gebruiken?</h2>
-      <p class="section-help">Kies wat op dit moment het handigst is. Je kunt een bestaande bon achteraf verdelen, of tijdens het uitje meteen bijhouden wie wat neemt.</p>
+      <p class="section-help">Kies wat op dit moment het handigst is: live bijhouden, een bon fotograferen of alles achteraf handmatig invoeren.</p>
       <div class="mode-grid">
         <button class="choice-card" data-start-mode="live">
           <div class="choice-icon">◎</div>
           <h3>Nu live bijhouden</h3>
           <p>Registreer tijdens de avond met één tik drankjes en gedeelde hapjes. Aan het eind hoef je alleen de prijzen van de bon te controleren.</p>
         </button>
+        <button class="choice-card" data-start-mode="scan">
+          <div class="choice-icon">▣</div>
+          <h3>Bon scannen</h3>
+          <p>Maak een foto of kies een bon. Bonsplitser leest de regels uit en laat je alles eerst controleren en corrigeren.</p>
+        </button>
         <button class="choice-card" data-start-mode="after">
           <div class="choice-icon">≡</div>
           <h3>Bon achteraf verdelen</h3>
           <p>Je hebt de bon al. Voer de bonregels in en verdeel daarna per regel wie wat heeft gehad.</p>
         </button>
+      </div>
+    </section>
+
+
+    <section class="step" data-step="7">
+      <h2 class="section-title">Bon scannen</h2>
+      <p class="section-help">Maak de bon zo groot en recht mogelijk in beeld. De herkenning gebeurt op je apparaat. Je controleert altijd eerst wat Bonsplitser heeft gelezen.</p>
+
+      <div class="card">
+        <div class="scan-drop">
+          <strong>Foto van de bon</strong>
+          <p class="small">Op een telefoon kun je direct de camera openen. De eerste scan heeft internet nodig om de tekstherkenning te laden.</p>
+          <input id="receiptPhoto" type="file" accept="image/*" capture="environment">
+          <div class="scan-actions">
+            <button class="btn primary" id="chooseReceiptBtn">📷 Foto maken / kiezen</button>
+            <button class="btn ghost hidden" id="scanReceiptBtn">Bon uitlezen</button>
+          </div>
+          <img id="scanPreview" class="scan-preview hidden" alt="Voorbeeld van de gekozen bon">
+          <div id="scanProgress" class="scan-progress hidden">
+            <div class="progress-track"><div id="scanProgressFill" class="progress-fill"></div></div>
+            <p class="small" id="scanStatus" style="margin:8px 0 0">Scanner voorbereiden…</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="scanResults" class="hidden">
+        <div class="card">
+          <div class="row" style="justify-content:space-between;align-items:flex-start">
+            <div><h3 style="margin-bottom:4px">Dit hebben we gevonden</h3><span class="small">Controleer aantallen, omschrijvingen en bedragen. Alles is aanpasbaar.</span></div>
+            <button class="btn ghost" id="addScanRowBtn">+ Regel</button>
+          </div>
+          <div id="scanRows" class="scan-table" style="margin-top:10px"></div>
+        </div>
+
+        <div class="card">
+          <h3>Controle van de bon</h3>
+          <div class="grid2">
+            <label class="field"><span>Subtotaal op bon</span><input id="scanSubtotal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"></label>
+            <label class="field"><span>Fooi op bon</span><input id="scanTip" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"></label>
+          </div>
+          <label class="field" style="margin-top:10px"><span>Totaal betaald</span><input id="scanGrandTotal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"></label>
+          <div id="scanChecks" class="scan-check"></div>
+        </div>
+
+        <details class="card">
+          <summary style="font-weight:750;cursor:pointer">Ruwe herkende tekst bekijken</summary>
+          <div id="scanRawText" class="ocr-raw" style="margin-top:12px"></div>
+        </details>
       </div>
     </section>
 
@@ -312,8 +388,14 @@
       <p class="section-help">Alles is verdeeld. Hieronder staat per persoon precies wat er betaald moet worden.</p>
       <div id="grandTotal"></div>
       <div id="summaryList"></div>
-      <div class="card">
-        <button class="btn primary" id="copyAllBtn" style="width:100%">Kopieer overzicht voor WhatsApp</button>
+      <div class="card" id="shareActions">
+        <h3>Deel of bewaar de afrekening</h3>
+        <div class="inline-actions">
+          <button class="btn primary" id="shareAllBtn">Deel overzicht</button>
+          <button class="btn ghost" id="copyAllBtn">Kopieer tekst</button>
+          <button class="btn ghost" id="downloadAllBtn">Download .txt</button>
+          <button class="btn ghost" id="printAllBtn">Afdrukken / PDF</button>
+        </div>
         <div id="copyStatus" class="copy-ok hidden">Overzicht gekopieerd.</div>
       </div>
     </section>
@@ -331,7 +413,7 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'bonsplitser-v2';
+  const STORAGE_KEY = 'bonsplitser-v3';
   const state = {
     step: 0, mode: null,
     restaurant: '', date: '',
@@ -339,7 +421,8 @@
     liveProducts: [], liveEvents: [], liveSelectedPeople: [],
     items: [{id: uid(), qty: 1, name:'', total:''}],
     allocations: {},
-    tip: '', tipMode: 'equal'
+    tip: '', tipMode: 'equal',
+    scan: {items:[], subtotal:'', tip:'', total:'', rawText:'', done:false}
   };
 
   const $ = s => document.querySelector(s);
@@ -356,7 +439,7 @@
   function esc(v){ return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
   function fmtQty(v){ const n = num(v); return Number.isInteger(n) ? String(n) : n.toLocaleString('nl-NL',{maximumFractionDigits:2}); }
 
-  function flow(){ return state.mode === 'live' ? [0,1,2,3,4,5,6] : [0,1,3,4,5,6]; }
+  function flow(){ if(state.mode==='live') return [0,1,2,3,4,5,6]; if(state.mode==='scan') return [0,7,1,3,4,5,6]; return [0,1,3,4,5,6]; }
   function nextInFlow(){ const f=flow(), i=f.indexOf(state.step); return i>=0 && i<f.length-1 ? f[i+1] : state.step; }
   function prevInFlow(){ const f=flow(), i=f.indexOf(state.step); return i>0 ? f[i-1] : state.step; }
 
@@ -371,7 +454,9 @@
       if (!Array.isArray(state.liveEvents)) state.liveEvents=[];
       if (!Array.isArray(state.liveSelectedPeople)) state.liveSelectedPeople=[];
       state.allocations ||= {};
-      state.step = Math.max(0, Math.min(6, num(state.step)));
+      state.scan ||= {items:[], subtotal:'', tip:'', total:'', rawText:'', done:false};
+      if(!Array.isArray(state.scan.items)) state.scan.items=[];
+      state.step = Math.max(0, Math.min(7, num(state.step)));
       if (!state.mode) state.step=0;
     } catch(e) {}
   }
@@ -470,11 +555,11 @@
     state.allocations=newAlloc;
   }
 
-  function render(){ renderChrome(); renderPeople(); renderLive(); renderItems(); renderDistribution(); renderTip(); renderSummary(); save(); }
+  function render(){ renderChrome(); renderScan(); renderPeople(); renderLive(); renderItems(); renderDistribution(); renderTip(); renderSummary(); save(); }
 
   function renderChrome(){
     $$('.step').forEach(el=>el.classList.toggle('active',num(el.dataset.step)===state.step));
-    const labels={0:'Kies een werkwijze',1:'Wie waren erbij?',2:'Live bijhouden',3:'Wat staat er op de bon?',4:'Wie had wat?',5:'Fooi',6:'Eindafrekening'};
+    const labels={0:'Kies een werkwijze',1:'Wie waren erbij?',2:'Live bijhouden',3:'Wat staat er op de bon?',4:'Wie had wat?',5:'Fooi',6:'Eindafrekening',7:'Bon scannen'};
     const f=flow().filter(x=>x!==0), idx=f.indexOf(state.step);
     $('#headerSubtitle').textContent=state.step===0 ? labels[0] : `${idx+1}/${f.length} · ${labels[state.step]}`;
     const progress=$('#progress'); progress.innerHTML='';
@@ -485,10 +570,116 @@
     $('#backBtn').classList.toggle('hidden',state.step===0);
     $('#nextBtn').classList.toggle('hidden',state.step===0 || state.step===6);
     if(state.step===2) $('#nextBtn').textContent='Naar de bon';
+    else if(state.step===7) $('#nextBtn').textContent='Wie waren erbij?';
     else if(state.step===5) $('#nextBtn').textContent='Bekijk afrekening';
     else $('#nextBtn').textContent='Verder';
     $('#bottomInner').classList.toggle('one',state.step===0 || state.step===6);
     $('.bottom-nav').classList.toggle('hidden',state.step===0);
+  }
+
+
+  let scanFile = null;
+  let scanObjectUrl = null;
+
+  function parseMoneyToken(v){
+    const cleaned=String(v||'').replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.');
+    const n=Number(cleaned); return Number.isFinite(n)?n:null;
+  }
+
+  function parseReceiptText(text){
+    const lines=String(text||'').split(/\r?\n/).map(x=>x.replace(/[|]/g,' ').replace(/\s+/g,' ').trim()).filter(Boolean);
+    const items=[]; let subtotal='', tip='', total=''; let corrections=0;
+    const moneyRe=/[€£$]?\s*\d+[.,]\d{2}/g;
+    for(const raw of lines){
+      const low=raw.toLowerCase();
+      const vals=(raw.match(moneyRe)||[]).map(parseMoneyToken).filter(v=>v!=null);
+      if(/sub\s*totaal|subtotaal/.test(low) && vals.length){subtotal=vals[vals.length-1].toFixed(2);continue;}
+      if(/\bfooi\b|\btip\b/.test(low) && vals.length){tip=vals[vals.length-1].toFixed(2);continue;}
+      if(/^totaal\b|^total\b/.test(low) && vals.length){total=vals[vals.length-1].toFixed(2);continue;}
+      if(/btw|vat|kaartbetaling|card payment|factuur|invoice|excl|incl/.test(low)) continue;
+      const qm=raw.match(/^\D*(\d{1,3})\s+(.+)$/); if(!qm||!vals.length) continue;
+      const qty=Number(qm[1]); if(!qty||qty>99) continue;
+      let rest=qm[2];
+      const moneyMatches=[...rest.matchAll(moneyRe)]; if(!moneyMatches.length) continue;
+      const firstMoneyIndex=moneyMatches[0].index;
+      let name=rest.slice(0,firstMoneyIndex).replace(/[·•|]+$/,'').trim();
+      if(name.length<2) continue;
+      let lineTotal=vals[vals.length-1];
+      let unit=vals.length>1?vals[vals.length-2]:lineTotal/qty;
+      if(qty>0 && Math.abs(unit*qty-lineTotal)>0.03){unit=lineTotal/qty; corrections++;}
+      items.push({id:uid(),qty,name,total:lineTotal.toFixed(2),unit:unit.toFixed(2)});
+    }
+    return {items,subtotal,tip,total,rawText:text,corrections};
+  }
+
+  function scanItemsTotal(){ return (state.scan.items||[]).reduce((s,i)=>s+moneyToCents(i.total),0); }
+
+  function renderScan(){
+    const results=$('#scanResults'); if(!results)return;
+    const has=state.scan.done || (state.scan.items&&state.scan.items.length);
+    results.classList.toggle('hidden',!has);
+    if(!has)return;
+    const wrap=$('#scanRows'); wrap.innerHTML='';
+    state.scan.items.forEach((it,idx)=>{
+      const qty=Math.max(0,num(it.qty)); const totalC=moneyToCents(it.total); const unit=qty?Math.round(totalC/qty):0;
+      const row=document.createElement('div'); row.className='scan-row';
+      row.innerHTML=`<label class="field"><span>Aantal</span><input type="number" min="0" step="1" inputmode="numeric" data-scan-qty="${it.id}" value="${esc(it.qty)}"></label><label class="field"><span>Omschrijving</span><input data-scan-name="${it.id}" value="${esc(it.name)}"></label><label class="field scan-price-field"><span>Totaal · p/st ${euro(unit)}</span><input type="number" min="0" step="0.01" inputmode="decimal" data-scan-total="${it.id}" value="${esc(it.total)}"></label><button class="btn danger iconbtn" data-remove-scan-row="${it.id}" aria-label="Verwijder regel">×</button>`;
+      wrap.appendChild(row);
+    });
+    $('#scanSubtotal').value=state.scan.subtotal||''; $('#scanTip').value=state.scan.tip||''; $('#scanGrandTotal').value=state.scan.total||''; $('#scanRawText').textContent=state.scan.rawText||'';
+    const calc=scanItemsTotal(), sub=moneyToCents(state.scan.subtotal), tip=moneyToCents(state.scan.tip), grand=moneyToCents(state.scan.total), expected=calc+tip;
+    const checks=[];
+    const subKnown=String(state.scan.subtotal||'').trim()!=='';
+    checks.push(`<div class="check-line ${!subKnown||calc===sub?'ok':'bad'}"><span>Som gevonden bonregels</span><strong>${euro(calc)}${subKnown?` / bon ${euro(sub)}`:''}</strong></div>`);
+    const totalKnown=String(state.scan.total||'').trim()!=='';
+    checks.push(`<div class="check-line ${!totalKnown||expected===grand?'ok':'bad'}"><span>Regels + fooi</span><strong>${euro(expected)}${totalKnown?` / betaald ${euro(grand)}`:''}</strong></div>`);
+    if(subKnown&&calc!==sub) checks.push(`<div class="notice" style="margin:0">⚠ De regels tellen niet op tot het subtotaal. Controleer vooral regels waar OCR een cijfer verkeerd kan hebben gelezen.</div>`);
+    else if(totalKnown&&expected!==grand) checks.push(`<div class="notice" style="margin:0">⚠ Subtotaal en fooi sluiten nog niet aan op het betaalde totaal.</div>`);
+    else checks.push(`<div class="validation ok">✓ De rekencontrole sluit aan.</div>`);
+    $('#scanChecks').innerHTML=checks.join('');
+  }
+
+  function loadTesseract(){
+    if(window.Tesseract)return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      const existing=document.querySelector('script[data-tesseract]'); if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}
+      const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; s.async=true; s.dataset.tesseract='1'; s.onload=resolve; s.onerror=()=>reject(new Error('Scanner kon niet worden geladen.')); document.head.appendChild(s);
+    });
+  }
+
+  async function preprocessReceipt(file){
+    const url=URL.createObjectURL(file);
+    const img=await new Promise((resolve,reject)=>{const im=new Image(); im.onload=()=>resolve(im); im.onerror=reject; im.src=url;});
+    const maxDim=1700, scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*scale); c.height=Math.round(img.naturalHeight*scale);
+    const ctx=c.getContext('2d',{willReadFrequently:true}); ctx.drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+    const data=ctx.getImageData(0,0,c.width,c.height), d=data.data;
+    for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2]; const v=Math.max(0,Math.min(255,(g-128)*1.5+128)); d[i]=d[i+1]=d[i+2]=v;}
+    ctx.putImageData(data,0,0); return c.toDataURL('image/jpeg',.9);
+  }
+
+  async function runReceiptScan(){
+    if(!scanFile)return alertMsg('Kies eerst een foto van de bon.');
+    const prog=$('#scanProgress'), fill=$('#scanProgressFill'), status=$('#scanStatus'); prog.classList.remove('hidden'); fill.style.width='4%'; status.textContent='Scanner laden…';
+    try{
+      await loadTesseract(); status.textContent='Foto voorbereiden…'; fill.style.width='10%';
+      const processed=await preprocessReceipt(scanFile);
+      const logger=m=>{if(m.status==='recognizing text'){const pct=Math.round((m.progress||0)*85)+12;fill.style.width=Math.min(97,pct)+'%';status.textContent=`Bon lezen… ${Math.round((m.progress||0)*100)}%`; } else if(m.status){status.textContent='Scanner: '+m.status.replace(/_/g,' ');}};
+      const worker=await Tesseract.createWorker('nld+eng',undefined,{logger});
+      const result=await worker.recognize(processed);
+      await worker.terminate();
+      const parsed=parseReceiptText(result.data.text||''); Object.assign(state.scan,parsed,{done:true});
+      if(parsed.tip) state.tip=parsed.tip;
+      fill.style.width='100%'; status.textContent=parsed.items.length?`${parsed.items.length} bonregels gevonden. Controleer ze hieronder.`:'Geen duidelijke bonregels gevonden. Je kunt regels handmatig toevoegen.';
+      render();
+    }catch(err){console.error(err); status.textContent='Scannen lukte niet. Probeer een scherpere foto of voer de regels handmatig in.'; fill.style.width='0%'; alertMsg('De bon kon niet automatisch worden gelezen. Je kunt een andere foto proberen.');}
+  }
+
+  function applyScanToBill(){
+    if(!state.scan.items.length)return false;
+    state.items=state.scan.items.map(it=>({id:uid(),qty:num(it.qty),name:it.name,total:Number(num(it.total)).toFixed(2)}));
+    state.allocations={}; if(String(state.scan.tip||'').trim()!=='') state.tip=state.scan.tip;
+    return true;
   }
 
   function renderPeople(){
@@ -574,6 +765,14 @@
   }
 
   function canAdvance(){
+    if(state.step===7){
+      if(!state.scan.items.length)return alertMsg('Scan eerst een bon of voeg minimaal één regel toe.');
+      const calc=scanItemsTotal(), sub=moneyToCents(state.scan.subtotal), tip=moneyToCents(state.scan.tip), grand=moneyToCents(state.scan.total);
+      const subMismatch=String(state.scan.subtotal||'').trim()!=='' && calc!==sub;
+      const totalMismatch=String(state.scan.total||'').trim()!=='' && calc+tip!==grand;
+      if((subMismatch||totalMismatch) && !confirm('De rekencontrole van de scan sluit nog niet helemaal aan. Wil je toch doorgaan?')) return false;
+      if(!applyScanToBill())return false;
+    }
     if(state.step===1){ const names=state.people.map(p=>p.name.trim()).filter(Boolean); if(!names.length)return alertMsg('Vul minimaal één naam in.'); if(names.length!==state.people.length)return alertMsg('Vul voor iedere persoon een naam in.'); if(new Set(names.map(n=>n.toLowerCase())).size!==names.length)return alertMsg('Gebruik voor iedere persoon een unieke naam.'); }
     if(state.step===2){ if(!state.liveEvents.length)return alertMsg('Registreer minimaal één consumptie, of ga terug en kies “Bon achteraf verdelen”.'); syncLiveToBill(); }
     if(state.step===3){ const valid=state.items.filter(i=>i.name.trim()&&num(i.qty)>0&&String(i.total??'').trim()!==''&&moneyToCents(i.total)>=0); if(!valid.length||valid.length!==state.items.length)return alertMsg('Vul elke bonregel compleet in: aantal, omschrijving en totaalprijs.'); }
@@ -585,16 +784,37 @@
   function go(step){ state.step=step; render(); window.scrollTo({top:0,behavior:'smooth'}); }
 
   function buildShareText(){
-    const data=allItemAllocations(); if(!data.allValid)return''; const tips=tipAllocation(data.perPerson); const title=state.restaurant.trim()?`Bonsplitser – ${state.restaurant.trim()}`:'Bonsplitser'; const dateText=state.date?new Date(state.date+'T12:00:00').toLocaleDateString('nl-NL'):''; const lines=[title+(dateText?` (${dateText})`:''),''];
-    state.people.forEach((p,pi)=>{const d=data.perPerson[p.id]; lines.push(`${cleanName(p,pi)}: ${euro(d.subtotal+(tips[p.id]||0))}`);}); lines.push('',`Bon: ${euro(receiptTotalCents())}`,`Fooi: ${euro(moneyToCents(state.tip))}`,`Totaal: ${euro(receiptTotalCents()+moneyToCents(state.tip))}`); return lines.join('\n');
+    const data=allItemAllocations(); if(!data.allValid)return'';
+    const tips=tipAllocation(data.perPerson);
+    const title=state.restaurant.trim()?`Bonsplitser – ${state.restaurant.trim()}`:'Bonsplitser';
+    const dateText=state.date?new Date(state.date+'T12:00:00').toLocaleDateString('nl-NL'):'';
+    const lines=[title+(dateText?` · ${dateText}`:''),''];
+    state.people.forEach((p,pi)=>{
+      const d=data.perPerson[p.id], tipC=tips[p.id]||0, total=d.subtotal+tipC;
+      lines.push(`${cleanName(p,pi)} — ${euro(total)}`);
+      d.lines.forEach(line=>{
+        const a=ensureAllocation(line.item); const extra=a.mode==='equal'?'gedeeld':a.mode==='amounts'?'vrije verdeling':`${fmtQty(num(a.values[p.id]))} ×`;
+        lines.push(`  • ${line.item.name.trim()||'Bonregel'} (${extra}): ${euro(line.cents)}`);
+      });
+      if(tipC) lines.push(`  • Fooi: ${euro(tipC)}`);
+      lines.push('');
+    });
+    lines.push(`Bon: ${euro(receiptTotalCents())}`,`Fooi: ${euro(moneyToCents(state.tip))}`,`Totaal: ${euro(receiptTotalCents()+moneyToCents(state.tip))}`);
+    return lines.join('\n');
   }
 
   document.addEventListener('input',e=>{
     const t=e.target;
     if(t.id==='restaurant')state.restaurant=t.value;
+    else if(t.id==='scanSubtotal')state.scan.subtotal=t.value;
+    else if(t.id==='scanTip')state.scan.tip=t.value;
+    else if(t.id==='scanGrandTotal')state.scan.total=t.value;
     else if(t.id==='date')state.date=t.value;
     else if(t.id==='tip')state.tip=t.value;
     else if(t.dataset.personName){const p=state.people.find(x=>x.id===t.dataset.personName);if(p)p.name=t.value;}
+    else if(t.dataset.scanQty){const i=state.scan.items.find(x=>x.id===t.dataset.scanQty);if(i)i.qty=t.value;}
+    else if(t.dataset.scanName){const i=state.scan.items.find(x=>x.id===t.dataset.scanName);if(i)i.name=t.value;}
+    else if(t.dataset.scanTotal){const i=state.scan.items.find(x=>x.id===t.dataset.scanTotal);if(i)i.total=t.value;}
     else if(t.dataset.itemQty){const i=state.items.find(x=>x.id===t.dataset.itemQty);if(i)i.qty=t.value;}
     else if(t.dataset.itemName){const i=state.items.find(x=>x.id===t.dataset.itemName);if(i)i.name=t.value;}
     else if(t.dataset.itemTotal){const i=state.items.find(x=>x.id===t.dataset.itemTotal);if(i){i.total=t.value;i.manualTotal=true;}}
@@ -605,13 +825,17 @@
   document.addEventListener('change',e=>{
     const t=e.target;
     if(t.name==='tipMode'){state.tipMode=t.value;render();}
-    else if(t.id==='tip'||t.dataset.itemQty||t.dataset.itemName||t.dataset.itemTotal||t.dataset.allocValue)render();
+    else if(t.id==='tip'||t.id==='scanSubtotal'||t.id==='scanTip'||t.id==='scanGrandTotal'||t.dataset.scanQty||t.dataset.scanName||t.dataset.scanTotal||t.dataset.itemQty||t.dataset.itemName||t.dataset.itemTotal||t.dataset.allocValue)render();
     else if(t.dataset.allocCheck){const [itemId,personId]=t.dataset.allocCheck.split('|');const a=state.allocations[itemId];if(a)a.values[personId]=t.checked;render();}
   });
 
   document.addEventListener('click',async e=>{
     const b=e.target.closest('button'); if(!b)return;
-    if(b.dataset.startMode){ state.mode=b.dataset.startMode; state.step=1; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+    if(b.dataset.startMode){ state.mode=b.dataset.startMode; state.step=state.mode==='scan'?7:1; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+    else if(b.id==='chooseReceiptBtn'){ $('#receiptPhoto').click(); }
+    else if(b.id==='scanReceiptBtn'){ await runReceiptScan(); }
+    else if(b.id==='addScanRowBtn'){ state.scan.items.push({id:uid(),qty:1,name:'',total:''}); state.scan.done=true; render(); }
+    else if(b.dataset.removeScanRow){ state.scan.items=state.scan.items.filter(i=>i.id!==b.dataset.removeScanRow); render(); }
     else if(b.id==='addPersonBtn'){state.people.push({id:uid(),name:''});render();}
     else if(b.dataset.removePerson){
       if(state.people.length<=1)return alertMsg('Er moet minimaal één persoon blijven staan.');
@@ -638,11 +862,28 @@
     else if(b.id==='nextBtn'){if(canAdvance())go(nextInFlow());}
     else if(b.id==='backBtn')go(prevInFlow());
     else if(b.id==='resetBtn'){
-      if(confirm('Nieuwe bon starten? De huidige gegevens worden gewist.')){localStorage.removeItem(STORAGE_KEY);Object.assign(state,{step:0,mode:null,restaurant:'',date:'',people:[{id:uid(),name:''},{id:uid(),name:''}],liveProducts:[],liveEvents:[],liveSelectedPeople:[],items:[{id:uid(),qty:1,name:'',total:''}],allocations:{},tip:'',tipMode:'equal'});render();}
+      if(confirm('Nieuwe bon starten? De huidige gegevens worden gewist.')){localStorage.removeItem(STORAGE_KEY);Object.assign(state,{step:0,mode:null,restaurant:'',date:'',people:[{id:uid(),name:''},{id:uid(),name:''}],liveProducts:[],liveEvents:[],liveSelectedPeople:[],items:[{id:uid(),qty:1,name:'',total:''}],allocations:{},tip:'',tipMode:'equal',scan:{items:[],subtotal:'',tip:'',total:'',rawText:'',done:false}});scanFile=null;if(scanObjectUrl){URL.revokeObjectURL(scanObjectUrl);scanObjectUrl=null;}render();}
     }
+    else if(b.id==='shareAllBtn'){
+      const text=buildShareText(); if(!text)return;
+      if(navigator.share){try{await navigator.share({title:'Bonsplitser',text});}catch(err){if(err?.name!=='AbortError')console.error(err);}}
+      else {try{await navigator.clipboard.writeText(text);}catch(err){} alertMsg('Delen wordt hier niet ondersteund. Het overzicht is naar het klembord gekopieerd.');}
+    }
+    else if(b.id==='downloadAllBtn'){
+      const text=buildShareText(); if(!text)return; const blob=new Blob([text],{type:'text/plain;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; const base=(state.restaurant.trim()||'bonsplitser').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-|-$/g,''); a.download=`${base||'bonsplitser'}-afrekening.txt`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500);
+    }
+    else if(b.id==='printAllBtn'){ window.print(); }
     else if(b.id==='copyAllBtn'){
       const text=buildShareText();if(!text)return; try{await navigator.clipboard.writeText(text);}catch(err){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();} $('#copyStatus').classList.remove('hidden');setTimeout(()=>$('#copyStatus').classList.add('hidden'),2500);
     }
+  });
+
+
+  $('#receiptPhoto').addEventListener('change',e=>{
+    const file=e.target.files&&e.target.files[0]; if(!file)return; scanFile=file;
+    if(scanObjectUrl)URL.revokeObjectURL(scanObjectUrl); scanObjectUrl=URL.createObjectURL(file);
+    $('#scanPreview').src=scanObjectUrl; $('#scanPreview').classList.remove('hidden'); $('#scanReceiptBtn').classList.remove('hidden');
+    $('#scanProgress').classList.add('hidden');
   });
 
   load(); render();
